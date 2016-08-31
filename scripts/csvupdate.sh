@@ -1,30 +1,21 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 git clean -fxd
 git reset --hard HEAD
 git pull
 
-CSV_CONTATTI='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=0&single=true&output=csv'
-CSV_ALLOGGI='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=2016214992&single=true&output=csv'
-CSV_DONAZIONI='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=444688992&single=true&output=csv'
-CSV_RACCOLTE='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=178302385&single=true&output=csv'
-CSV_NOTIZIE='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=739713240&single=true&output=csv'
-CSV_BOLLETTINO='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=814315&single=true&output=csv'
-CSV_FABBISOGNI='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=66190431&single=true&output=csv'
-CSV_VITTIME='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=1445675693&single=true&output=csv'
-CSV_PRESS='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/pub?gid=1534569987&single=true&output=csv'
+BASE_URI='https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/export?single=true&format=csv&gid='
+
+wget -O- 'https://docs.google.com/spreadsheets/d/1WL5BuoKQRM560VNctYOeDeineLeBwP7vtFlwltasASM/export?gid=208924232&single=true&format=tsv' |
+sed -e 's/\r$//g' -e '$a\' | tail -n +2 | while IFS=$'\t' read -r section gid; do
+	filename="${section,,}.csv"
+	# Paranoia++
+	[[ "/$filename/" == */../* ]] && continue
+	wget -O "_data/$filename" "$BASE_URI$gid"
+done
 
 #MD_vittime='http://blog.spaziogis.it/static/projs/terremotocentroitalia/vittime.md'
 
-wget -O _data/contatti.csv $CSV_CONTATTI
-wget -O _data/alloggi.csv $CSV_ALLOGGI 
-wget -O _data/donazioni.csv $CSV_DONAZIONI
-wget -O _data/raccolte.csv $CSV_RACCOLTE
-wget -O _data/notizie.csv $CSV_NOTIZIE
-wget -O _data/bollettino.csv $CSV_BOLLETTINO
-wget -O _data/fabbisogni.csv $CSV_FABBISOGNI
-wget -O _data/vittime.csv $CSV_VITTIME
-wget -O _data/press.csv $CSV_PRESS
 #wget -O vittime.md $MD_vittime
 
 sed -i 's/\r$//g' _data/*.csv
